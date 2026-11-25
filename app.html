@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Astro · app</title>
+<meta name="description" content="Scan any Solana launch through Astro's gate, watch new launches live, and make a launch card.">
+<meta name="theme-color" content="#141315">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/fav-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="/img/fav-64.png">
+<link rel="apple-touch-icon" href="/img/fav-180.png">
+<meta property="og:title" content="Astro"><meta property="og:description" content="The fair launchpad with its own chain."><meta property="og:image" content="/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="/fonts/pixelify.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/astro.css?v=1">
+<script type="module" src="/js/app.js?v=1"></script>
+</head>
+<body class="app-body">
+<div class="app-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+<div id="grain"></div>
+<div class="shell">
+  <aside class="side" aria-label="App">
+    <a class="brand" href="/"><img src="/img/fav-64.png" alt=""><b>astro</b></a>
+    <div class="grp">The gate</div>
+    <a class="it" href="#scan" data-v="scan"><span data-i="scan"></span>Scan a coin</a>
+    <a class="it" href="#live" data-v="live"><span data-i="live"></span>Live gate<span class="n" id="nLive"></span></a>
+    <a class="it" href="#clean" data-v="clean"><span data-i="clean"></span>Clean launches<span class="n" id="nClean"></span></a>
+    <div class="grp">Make</div>
+    <a class="it" href="#card" data-v="card"><span data-i="card"></span>Launch card</a>
+    <a class="it" href="#saved" data-v="saved"><span data-i="saved"></span>Saved scans<span class="n" id="nSaved"></span></a>
+    <div class="grp">More</div>
+    <a class="it" href="/docs"><span data-i="docs"></span>Docs</a>
+    <a class="it" href="/"><span data-i="home"></span>Home</a>
+    <div class="foot"><div class="feed"><span class="dot off" id="feedDot"></span><span id="feedTxt">Connecting to the live feed…</span></div><div id="sideCa"></div></div>
+  </aside>
+
+  <main class="main">
+    <!-- scan -->
+    <section class="view" id="v-scan" data-view="scan">
+      <div class="topbar"><div><h1>Scan a coin</h1><div class="sub">Replay any Solana launch through Astro's five rules, read straight from the chain.</div></div></div>
+      <form class="field" id="scanForm" autocomplete="off">
+        <label class="sr" for="scanInput">A token contract address</label>
+        <input id="scanInput" spellcheck="false" placeholder="Contract address of any Solana token">
+        <button class="paste" type="button" id="scanPaste">PASTE</button>
+        <button class="btn p" type="submit">Scan <span class="ar">→</span></button>
+      </form>
+      <div class="scan-try" id="scanTry"></div>
+      <div class="res" id="scanRes" aria-live="polite"></div>
+    </section>
+
+    <!-- live -->
+    <section class="view" id="v-live" data-view="live">
+      <div class="topbar"><div><h1>Live gate</h1><div class="sub">Every new launch on the live feed, checked against the rules you can see from outside the chain.</div></div>
+        <form class="quick" data-quick><input placeholder="Paste a coin to scan" spellcheck="false"><button class="btn p sm" type="submit">Scan</button></form></div>
+      <div class="statrow" id="liveStats">
+        <div class="stat"><b data-k="seen">—</b><span>launches since you opened the app</span></div>
+        <div class="stat"><b class="hot" data-k="flagged">—</b><span>flagged by at least one rule</span></div>
+        <div class="stat"><b class="hot" data-k="rush">—</b><span>over 1% bought in the first seconds</span></div>
+        <div class="stat"><b class="hot" data-k="devsold">—</b><span>devs who sold within three minutes</span></div>
+      </div>
+      <div class="board" id="board" style="margin-top:0"></div>
+    </section>
+
+    <!-- clean -->
+    <section class="view" id="v-clean" data-view="clean">
+      <div class="topbar"><div><h1>Clean launches</h1><div class="sub">New coins with nothing flagged after their first 20 seconds, biggest first. Clean means a fair start, not a good coin.</div></div>
+        <form class="quick" data-quick><input placeholder="Paste a coin to scan" spellcheck="false"><button class="btn p sm" type="submit">Scan</button></form></div>
+      <div class="cards" id="cleanCards"></div>
+    </section>
+
+    <!-- card -->
+    <section class="view" id="v-card" data-view="card">
+      <div class="topbar"><div><h1>Launch card</h1><div class="sub">Make a card for your coin that shows the rules it launches with. Everything stays in your browser.</div></div></div>
+      <div class="builder">
+        <form class="form" id="cardForm" autocomplete="off">
+          <label>Image<div class="drop" id="drop"><canvas id="dropCv" width="112" height="112"></canvas><span>Drop an image or click to choose one. It's redrawn here and never uploaded.</span></div><input type="file" id="file" accept="image/*" hidden></label>
+          <label>Name<input type="text" id="fName" maxlength="32" placeholder="Name of your coin"></label>
+          <label>Ticker<input type="text" id="fTicker" maxlength="10" placeholder="TICKER"></label>
+          <label>One line about it<textarea id="fLine" maxlength="110" placeholder="What is it, in one line"></textarea></label>
+          <label class="toggle">Pixel style for the image<input type="checkbox" id="fPixel" checked></label>
+        </form>
+        <div class="preview">
+          <canvas id="cardCv" width="1200" height="675" aria-label="Launch card preview"></canvas>
+          <div class="acts"><button class="btn p" id="cardSave" type="button">Download PNG</button><a class="btn g" id="cardX" target="_blank" rel="noopener">Post on X</a></div>
+          <p class="pnote">The Astro chain isn't live yet. The card shows the five rules every Astro launch runs under.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- saved -->
+    <section class="view" id="v-saved" data-view="saved">
+      <div class="topbar"><div><h1>Saved scans</h1><div class="sub">Every coin you've scanned, kept in this browser only.</div></div>
+        <form class="quick" data-quick><input placeholder="Paste a coin to scan" spellcheck="false"><button class="btn p sm" type="submit">Scan</button></form></div>
+      <div class="saved" id="saved"></div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

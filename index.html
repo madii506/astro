@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en" class="intro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Astro</title>
+<meta name="description" content="The fair launchpad with its own chain. Every buy goes through the gate: no buys in the launch block, one buy per wallet in the first minute, no shared funders, and a dev who waits a day.">
+<meta name="theme-color" content="#141315">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/fav-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="/img/fav-64.png">
+<link rel="apple-touch-icon" href="/img/fav-180.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Astro">
+<meta property="og:description" content="The fair launchpad with its own chain.">
+<meta property="og:image" content="/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Astro">
+<meta name="twitter:description" content="The fair launchpad with its own chain.">
+<meta name="twitter:image" content="/img/og.jpg">
+<link rel="preload" href="/fonts/pixelify.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/astro.css?v=1">
+<script src="/vendor/lenis.min.js" defer></script>
+<script type="module" src="/js/site.js?v=1"></script>
+</head>
+<body>
+<canvas id="world" aria-hidden="true"></canvas>
+<div id="veil"></div><div id="vign"></div><div id="grain"></div>
+
+<header class="nav" id="nav">
+  <div></div>
+  <nav class="nav-links" aria-label="Sections">
+    <a href="#gate">Gate</a><a href="#rules">Rules</a><a href="#chain">Chain</a><a href="#scan">Scan</a><a href="#live">Live</a><a href="#plan">Plan</a><a href="#faq">FAQ</a><a class="app" href="/app">Open app</a>
+  </nav>
+  <button class="nav-burger" id="burger" type="button" aria-label="Open menu"><i></i></button>
+</header>
+<div class="sheet" id="sheet" aria-hidden="true">
+  <button class="x" id="sheetX" type="button" aria-label="Close menu">✕</button>
+  <a href="#gate">Gate</a><a href="#rules">Rules</a><a href="#chain">Chain</a><a href="#scan">Scan</a><a href="#live">Live</a><a href="#plan">Plan</a><a href="#faq">FAQ</a><a href="/app">Open app</a><a href="/docs">Docs</a>
+</div>
+<nav class="rail" id="rail" aria-label="Countdown">
+  <a href="#trench"><b>T−8</b><span>The trench</span></a>
+  <a href="#gate"><b>T−7</b><span>The gate</span></a>
+  <a href="#rules"><b>T−6</b><span>Five rules</span></a>
+  <a href="#chain"><b>T−5</b><span>Its own chain</span></a>
+  <a href="#scan"><b>T−4</b><span>Try the gate</span></a>
+  <a href="#live"><b>T−3</b><span>Live gate</span></a>
+  <a href="#plan"><b>T−2</b><span>Flight plan</span></a>
+  <a href="#faq"><b>T−1</b><span>Questions</span></a>
+  <a href="#liftoff"><b>T−0</b><span>Liftoff</span></a>
+</nav>
+<button class="skip" id="skip" type="button">SKIP ›</button>
+
+<main>
+  <!-- hero: the wordmark is built from voxels in the canvas behind this -->
+  <section class="hero" id="top">
+    <h1 class="sr">Astro, the fair launchpad with its own chain</h1>
+    <div class="hero-fallback" aria-hidden="true">astro</div>
+    <form class="field hero-scan" id="heroScan" autocomplete="off">
+      <label class="sr" for="heroInput">A token contract address</label>
+      <input id="heroInput" name="mint" spellcheck="false" placeholder="Paste any token. See who the gate stops.">
+      <button class="paste" type="button" id="heroPaste">PASTE</button>
+      <button class="btn p" type="submit">Scan <span class="ar">→</span></button>
+    </form>
+    <div class="hero-meta"><a class="how" href="#gate">How the gate works ↓</a><span id="heroCa"></span></div>
+    <div class="tape" id="tape">
+      <div class="tape-label"><span class="dot off" id="tapeDot"></span>LIVE LAUNCHES</div>
+      <div class="tape-track" id="tapeTrack"><span class="tape-empty">Connecting to the live feed…</span></div>
+    </div>
+  </section>
+
+  <!-- T-8 -->
+  <section class="sec trench" id="trench">
+    <div class="wrap">
+      <p class="kick rv"><b>T−8</b>The trench</p>
+      <h2 class="h2 rv">Most launches are decided <em>before you can click.</em></h2>
+      <p class="lede rv">A coin goes live, and in that same block bots have already bought. Twenty wallets funded by one person take a third of the supply. The dev sells into your first buy. By the time a human sees the chart, the launch is over, and the people who came early were never people.</p>
+      <div class="counters rv" id="counters">
+        <div class="counter"><div class="n" data-k="seen">—</div><div class="l">new launches watched since you opened this page</div></div>
+        <div class="counter"><div class="n hot" data-k="rush">—</div><div class="l">saw over 1% of supply bought in the first seconds</div></div>
+        <div class="counter"><div class="n hot" data-k="devcap">—</div><div class="l">had a dev buy more than 3% at launch</div></div>
+        <div class="counter"><div class="n hot" data-k="devsold">—</div><div class="l">had a dev sell within three minutes</div></div>
+      </div>
+      <div class="counters-foot rv"><span class="dot off" id="ctrDot"></span><span id="ctrNote">Connecting to the live feed…</span></div>
+      <div class="pains">
+        <article class="pain rv" style="--d:0"><span data-icon="sniper"></span><h3 class="h3">Snipers</h3><p>Bots watch for new coins and buy in the launch block itself, often bundled right next to the create transaction. Nobody beats a buy that lands before the chart exists.</p></article>
+        <article class="pain rv" style="--d:1"><span data-icon="bundle"></span><h3 class="h3">Bundles</h3><p>One person funds twenty fresh wallets and buys with all of them at once. On the chart it looks like twenty believers. It's one hand on a third of the supply.</p></article>
+        <article class="pain rv" style="--d:2"><span data-icon="dump"></span><h3 class="h3">Dev dumps</h3><p>The creator buys big at the lowest price, waits for the first wave, then sells into it. Nothing on a normal launchpad can stop them.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- T-7: pinned replay -->
+  <section class="sec gate" id="gate" aria-label="The gate, step by step">
+    <div class="gate-pin" id="gatePin">
+      <div class="gate-stick">
+        <div class="gate-copy">
+          <p class="kick"><b>T−7</b>The gate</p>
+          <div style="position:relative">
+            <div class="gate-step on"><div class="num">01 <i>/ 06</i></div><h3>Block zero belongs to the launch.</h3><p>On Astro, a coin is born in a block of its own. The creator's first buy goes in with it, capped at 3% of the supply. Nothing else fits in that block: not a sniper, not a bundle, not a friend of the dev.</p><div class="rule">RULE 1 · no buys in the launch block</div></div>
+            <div class="gate-step"><div class="num">02 <i>/ 06</i></div><h3>Snipers bounce.</h3><p>Bots that try to land in the launch block don't get a worse price. They get refused. The gate checks the block before it checks anything else, so being fastest stops being an edge.</p><div class="rule">RULE 1 · refused, not front-run</div></div>
+            <div class="gate-step"><div class="num">03 <i>/ 06</i></div><h3>One funder, one wallet.</h3><p>Before a buy gets in, the gate looks at where the wallet's SOL came from. Eight wallets fed by the same address are one buyer in eight masks. The first one gets in. The other seven don't.</p><div class="rule">RULE 3 · no common funder, first hour</div></div>
+            <div class="gate-step"><div class="num">04 <i>/ 06</i></div><h3>One buy each. 1% max.</h3><p>For the first sixty seconds every wallet gets exactly one buy, capped at 1% of the supply. A second buy is refused. A whale's buy is trimmed to the cap. The first minute gets shared, not swallowed.</p><div class="rule">RULE 2 · one buy per wallet, 1% cap</div></div>
+            <div class="gate-step"><div class="num">05 <i>/ 06</i></div><h3>The dev waits a day.</h3><p>The creator's tokens can't be sold or moved for 24 hours. Not to another wallet, not to an exchange. If the dev wants out, they leave with everyone else, not before.</p><div class="rule">RULE 5 · 24-hour dev lock</div></div>
+            <div class="gate-step"><div class="num">06 <i>/ 06</i></div><h3>Then the gate opens.</h3><p>After the first minute the coin trades freely, for everyone, at the same time. Same block, same price, same rules. That's what a fair start looks like.</p><div class="rule">ENFORCED BY THE CHAIN, NOT BY A PROMISE</div></div>
+          </div>
+        </div>
+        <div class="gate-stage">
+          <canvas id="gateCv"></canvas>
+          <div class="gate-hud"><span>Astro · one launch, replayed</span><span id="gateHud">block <b>0</b></span></div>
+          <div class="gate-bar" id="gateBar"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- T-6 -->
+  <section class="sec" id="rules">
+    <div class="wrap">
+      <p class="kick rv"><b>T−6</b>Five rules</p>
+      <h2 class="h2 rv">Five rules. <em>No exceptions.</em> No settings.</h2>
+      <p class="lede rv">Every coin on Astro launches under the same rules. A creator can't switch them off, and nobody can pay to skip them. They're checked for every transaction before it reaches a block.</p>
+      <div class="rules-grid">
+        <article class="rule-card rv" style="--d:0"><span class="rn">1</span><div class="ico" data-icon="block"></div><h3>The launch block is for the launch.</h3><p>A new coin's first block holds the creation and the creator's capped buy. Every other buy aimed at that block is refused.</p><div class="stops"><span class="chip no">stops snipers</span><span class="chip no">stops create bundles</span></div></article>
+        <article class="rule-card rv" style="--d:1"><span class="rn">2</span><div class="ico" data-icon="slice"></div><h3>One buy each, 1% max, first minute.</h3><p>For sixty seconds after launch each wallet gets one buy, capped at 1% of supply. A second buy is refused; a bigger one is trimmed to the cap.</p><div class="stops"><span class="chip no">stops whales</span><span class="chip no">stops spam buys</span></div></article>
+        <article class="rule-card rv" style="--d:2"><span class="rn">3</span><div class="ico" data-icon="funder"></div><h3>No common funder, first hour.</h3><p>If the wallet that funded you in the last day already funded another buyer of this coin, your buy is refused. Exchange withdrawals don't count.</p><div class="stops"><span class="chip no">stops bundles</span><span class="chip no">stops wallet farms</span></div></article>
+        <article class="rule-card rv" style="--d:3"><span class="rn">4</span><div class="ico" data-icon="cap"></div><h3>The dev buy is capped at 3%.</h3><p>The creator can buy up to 3% of supply at launch, and that's it for the first hour: no top-ups from the dev's wallet or from wallets it funded.</p><div class="stops"><span class="chip no">stops dev-heavy launches</span></div></article>
+        <article class="rule-card rv" style="--d:4"><span class="rn">5</span><div class="ico" data-icon="lock"></div><h3>The dev is locked for 24 hours.</h3><p>The creator's tokens can't be sold or transferred for a full day after launch. Moving them to a fresh wallet doesn't work either: the lock follows the tokens.</p><div class="stops"><span class="chip no">stops dev dumps</span><span class="chip no">stops slow rugs</span></div></article>
+      </div>
+      <p class="rules-note rv">None of this makes a coin a good investment. It makes the start fair: everyone who shows up in the first minute plays by the same rules as everyone else.</p>
+    </div>
+  </section>
+
+  <!-- T-5 -->
+  <section class="sec" id="chain">
+    <div class="wrap">
+      <p class="kick rv"><b>T−5</b>Its own chain</p>
+      <h2 class="h2 rv">Rules a launchpad can't enforce, <em>a chain can.</em></h2>
+      <p class="lede rv">On Solana, a launchpad is a program. It can't choose which transactions share a block with the launch, it can't see where a wallet's money came from, and it can't stop a bundle that pays to go first. Astro is a chain built for launches. The gate sits in front of the block producer, so every rule is checked before a transaction is ever included.</p>
+      <div class="versus rv" id="versus">
+        <div class="vs-row vs-head"><div>The question</div><div class="a">A pad on Solana</div><div class="b">Astro</div></div>
+        <div class="vs-row"><div class="q">Who decides what lands in the launch block?</div><div class="a"><span>Whoever pays the biggest tip to the block producer.</span></div><div class="b"><span>The gate. The launch block holds the launch and nothing else.</span></div></div>
+        <div class="vs-row"><div class="q">Can twenty wallets from one funder buy at once?</div><div class="a"><span>Yes, in a single bundle.</span></div><div class="b"><span>The first one can. The rest are refused at the gate.</span></div></div>
+        <div class="vs-row"><div class="q">How much can one wallet take in minute one?</div><div class="a"><span>As much as it can pay for.</span></div><div class="b"><span>One buy, at most 1% of the supply.</span></div></div>
+        <div class="vs-row"><div class="q">Can the dev sell in the first hour?</div><div class="a"><span>Yes, whenever they like.</span></div><div class="b"><span>No. Dev tokens are locked for 24 hours.</span></div></div>
+        <div class="vs-row"><div class="q">Where do the rules live?</div><div class="a"><span>On a website, as promises.</span></div><div class="b"><span>In the chain's admission check, for every transaction.</span></div></div>
+      </div>
+      <div class="arch">
+        <div class="arch-list">
+          <div class="arch-item rv"><b>01</b><div><h4>The gate</h4><p>Every transaction meets the gate first. It checks the five rules against the chain's own state, then lets it through or refuses it. A refused transaction never reaches a block and costs nothing.</p></div></div>
+          <div class="arch-item rv" style="--d:1"><b>02</b><div><h4>The sequencer</h4><p>Astro starts with a single block producer, like most new chains, making a block every 400 milliseconds. Every block is public, and anyone can run a read-only node to check the rules were kept.</p></div></div>
+          <div class="arch-item rv" style="--d:2"><b>03</b><div><h4>The bridge</h4><p>$ASTRO moves between Solana and Astro one-for-one through a public vault. On Astro it's the chain's own unit: launches are paid in it and curves are priced in it.</p></div></div>
+          <div class="arch-item rv" style="--d:3"><b>04</b><div><h4>The curve</h4><p>Coins trade on a bonding curve, like on pump.fun. The difference is everything in front of the curve: who's allowed to buy, how much, and when.</p></div></div>
+        </div>
+        <div class="rv s"><svg class="arch-svg" id="arch" viewBox="0 0 560 420" role="img" aria-label="Wallets send transactions to the gate; the gate passes or refuses them; the sequencer puts passed transactions in blocks; ASTRO bridges from Solana through a vault."></svg></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- T-4 -->
+  <section class="sec" id="scan">
+    <div class="wrap">
+      <p class="kick rv"><b>T−4</b>Try the gate</p>
+      <h2 class="h2 rv">Run any launch <em>through the gate.</em></h2>
+      <p class="lede rv">Paste any Solana token: a pump.fun coin, a bonk or Meteora launch, a fresh Raydium pool. Astro finds the moment trading opened and reads the minute after it straight from Solana: who bought in the launch block, who held tokens before it opened, which wallets were funded by the same hand, who bought twice, who took more than 1%, and what the dev did on day one. Then it shows you exactly what the gate would have refused.</p>
+      <div class="scan-box rv">
+        <form class="field" id="scanForm" autocomplete="off">
+          <label class="sr" for="scanInput">A token contract address</label>
+          <input id="scanInput" name="mint" spellcheck="false" placeholder="Contract address of any Solana token">
+          <button class="paste" type="button" id="scanPaste">PASTE</button>
+          <button class="btn p" type="submit">Scan <span class="ar">→</span></button>
+        </form>
+        <div class="scan-try" id="scanTry"></div>
+        <div class="res" id="scanRes" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- T-3 -->
+  <section class="sec" id="live">
+    <div class="wrap">
+      <p class="kick rv"><b>T−3</b>Live gate</p>
+      <h2 class="h2 rv">Every new launch, <em>checked as it happens.</em></h2>
+      <p class="lede rv">This board listens to new launches in real time. Each new coin gets a live check against what can be seen from the outside: the dev's launch buy, how much went in the first seconds, wallets taking over 1%, wallets buying twice, and a dev who sells. Tap any coin for the full on-chain scan.</p>
+      <div class="board rv" id="board"></div>
+    </div>
+  </section>
+
+  <!-- T-2 -->
+  <section class="sec" id="plan">
+    <div class="wrap">
+      <p class="kick rv"><b>T−2</b>Flight plan</p>
+      <h2 class="h2 rv">Built in the open, <em>one stage at a time.</em></h2>
+      <div class="plan" id="planList">
+        <div class="plan-fill" id="planFill"></div>
+        <div class="stage live rv"><div class="pip">01</div><div><h3>Ground</h3><p>The gate's logic, running today on Solana's real data, so you can see what it would stop before the chain exists.</p><ul><li>The gate scan for any Solana launch</li><li>The live gate on every new launch</li><li>A public scan API anyone can build on</li></ul></div><span class="chip ok when">live now</span></div>
+        <div class="stage rv"><div class="pip">02</div><div><h3>Static fire</h3><p>A public test network with the gate switched on for real. Test launches, test buys, the five rules enforced by the chain. Anyone can try to break it.</p><ul><li>Testnet with the gate in front of the sequencer</li><li>Explorer and a read-only RPC</li><li>Open rule tests anyone can run</li></ul></div><span class="chip mute when">next</span></div>
+        <div class="stage rv"><div class="pip">03</div><div><h3>Liftoff</h3><p>Mainnet genesis. The bridge vault opens, $ASTRO becomes the chain's own unit, and the first fair launches go live.</p><ul><li>Bridge between Solana and Astro</li><li>The first launches on Astro</li><li>Launch fees paid in $ASTRO</li></ul></div><span class="chip mute when">after testnet</span></div>
+        <div class="stage rv"><div class="pip">04</div><div><h3>Orbit</h3><p>More block producers, published rule upgrades with notice, and tools for anyone who wants to build on a fair chain.</p><ul><li>More block producers</li><li>Rule upgrades announced in advance</li><li>An SDK for builders</li></ul></div><span class="chip mute when">later</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- T-1 -->
+  <section class="sec" id="faq">
+    <div class="wrap">
+      <p class="kick rv"><b>T−1</b>Questions</p>
+      <h2 class="h2 rv">The obvious questions, <em>answered first.</em></h2>
+      <div class="faq">
+        <details class="qa rv"><summary>Is Astro live?<i></i></summary><div class="ans"><div><p>Partly, and we'd rather say exactly which part. The gate scan and the live gate are live today and read real Solana data. The Astro chain itself isn't live yet: it goes to a public testnet first, then mainnet.</p></div></div></details>
+        <details class="qa rv"><summary>Why does a launchpad need its own chain?<i></i></summary><div class="ans"><div><p>Because the tricks happen before a launchpad's program ever runs. On Solana, whoever pays the block producer the most decides what shares the launch block, and a program can't see who funded a wallet. Astro puts its rules in front of the block producer, where they can actually be enforced.</p></div></div></details>
+        <details class="qa rv"><summary>How does the gate know wallets are bundled?<i></i></summary><div class="ans"><div><p>It follows the money one step back. When a wallet tries to buy, the gate checks which address sent it SOL in the last 24 hours. If that address already funded another buyer of the same coin, the buy is refused. One funder, one wallet.</p></div></div></details>
+        <details class="qa rv"><summary>Can't a sniper just use exchange withdrawals?<i></i></summary><div class="ans"><div><p>They can, which is why exchange hot wallets don't count as a shared funder. But it doesn't help much: in the first minute every wallet gets one buy of at most 1%, at the same price as everyone else. Fifty fresh wallets buy fifty small slices, never the launch block.</p></div></div></details>
+        <details class="qa rv"><summary>What does the gate scan actually check?<i></i></summary><div class="ans"><div><p>It finds the block where trading opened, the moment the coin's curve or pool got its tokens, and reads every transaction in the minute after it from Solana. It notes who already held tokens before that, traces where the early wallets got their SOL, and reads the dev's token account for the first 24 hours. Then it replays all of it through the five rules. It works on any Solana token, not only pump.fun coins; the docs list every step and its limits.</p></div></div></details>
+        <details class="qa rv"><summary>My coin shows a refused buy that was mine. Why?<i></i></summary><div class="ans"><div><p>The scan doesn't know who you are, only what happened. A creator's own launch buy is allowed up to 3%. A second wallet buying in the launch block, even if it's yours, is exactly what the gate refuses.</p></div></div></details>
+        <details class="qa rv"><summary>Is a clean launch a safe coin?<i></i></summary><div class="ans"><div><p>No. A clean launch means nobody cheated at the start. The coin can still go to zero. Nothing on this site is financial advice.</p></div></div></details>
+        <details class="qa rv"><summary>Who runs the chain?<i></i></summary><div class="ans"><div><p>At launch, one sequencer run by the team, like most new chains. The rules, the code and every block are public, and anyone can run a read-only node to check that the gate did what it says. More block producers come in a later stage.</p></div></div></details>
+        <details class="qa rv"><summary>Can the rules change?<i></i></summary><div class="ans"><div><p>Only in the open. Any change to a rule is published with its reasoning before it takes effect, and coins launched under the old rules keep them.</p></div></div></details>
+        <details class="qa rv"><summary>Do I need a wallet to use the scanner?<i></i></summary><div class="ans"><div><p>No. The scan and the live gate only read public data. Nothing asks you to connect a wallet or sign anything.</p></div></div></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- T-0: the wordmark comes back together behind this -->
+  <section class="sec lift" id="liftoff">
+    <p class="kick rv"><b>T−0</b>Liftoff</p>
+    <h2 class="h2 rv">Everyone starts <em>on the same block.</em></h2>
+    <p class="lede rv" style="margin:0 auto">No head starts. No masks. No dev exits. Just a launch.</p>
+    <div class="acts rv"><a class="btn p" href="/app">Open the app <span class="ar">→</span></a><a class="btn g" href="/docs">Read the docs</a><a class="btn g" id="xLink" hidden target="_blank" rel="noopener">Follow on X</a></div>
+    <p class="fine rv">The Astro chain is not live yet. The gate scan and the live gate read public Solana data. Nothing here is financial advice: a fair launch can still go to zero.</p>
+  </section>
+</main>
+</body>
+</html>
