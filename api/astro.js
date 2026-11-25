@@ -4,6 +4,10 @@
 const crypto = require('node:crypto');
 
 const RPCS = [process.env.RPC_URL, 'https://api.mainnet-beta.solana.com'].filter(Boolean);
+const PUBLIC = !process.env.RPC_URL;            // the public RPC rate-limits hard: go slower and retry longer
+const { AsyncLocalStorage } = require('node:async_hooks');
+const CLOCK = new AsyncLocalStorage(), HARD = 54000;   // every scan carries its own hard stop, well inside the function's 60 s
+const until = () => { const c = CLOCK.getStore(); return c ? c.end - Date.now() : Infinity; };
 const PUMP = '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P';
 const TOKEN = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
 const TOKEN22 = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb';
@@ -82,7 +86,8 @@ function pda(seeds, program) {
 
 // ---------- RPC: falls through to the next endpoint on refusals, backs off on rate limits ----------
 async function post(url, payload) {
-  const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+  const ms = Math.max(1500, Math.min(15000, until() - 500));
+  const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.timeout(ms) });
   if (r.status === 429) throw Object.assign(new Error('rate limited'), { again: true });
   if (r.status === 401 || r.status === 403 || r.status >= 500) throw Object.assign(new Error('rpc ' + r.status), { next: true });
   return r.json();
@@ -90,21 +95,22 @@ async function post(url, payload) {
 async function rpc(method, params) {
   let last;
   for (const u of RPCS) {
-    for (let a = 0; a < 4; a++) {
+    for (let a = 0; a < (PUBLIC ? 7 : 4); a++) {
+      if (until() < 1500) throw last || new Error('Solana did not answer in time');
       try {
         const j = await post(u, { jsonrpc: '2.0', id: 1, method, params });
-        if (j.error) {
-          const m = String(j.error.message || '');
-          if (/rate|too many|429/i.test(m)) { last = new Error(m); await sleep(450 * (a + 1)); continue; }
-          if (/forbidden|token|not allowed|disabled|unauthori/i.test(m)) { last = new Error(m); break; }
-          throw Object.assign(new Error(m || 'rpc error'), { final: true });
-        }
-        return j.result;
+        if (!j.error) return j.result;
+        const m = String(j.error.message || '');
+        if (/forbidden|token|not allowed|disabled|unauthori/i.test(m)) { last = new Error(m); break; }
+        if (!/rate|too many|429/i.test(m)) throw Object.assign(new Error(m || 'rpc error'), { final: true });
+        last = new Error(m);
       } catch (e) {
         last = e; if (e.final) throw e;
-        if (e.again) { await sleep(450 * (a + 1)); continue; }
-        break;
+        if (!e.again) break;
       }
+      const wait = (PUBLIC ? 800 : 450) * (a + 1);   // rate limited: back off, but never past this scan's hard stop
+      if (until() - wait < 1500) throw last;
+      await sleep(wait);
     }
   }
   throw last || new Error('Solana did not answer');
@@ -115,25 +121,28 @@ async function pmap(items, n, fn) {
   return out;
 }
 let batchWorks = true;
-async function many(method, list) {                 // JSON-RPC batches of 20, falling back to single calls
+const limited = j => /rate|too many|429/i.test(String(j && j.error && j.error.message || ''));
+async function many(method, list) {                 // JSON-RPC batches (retried as a batch when rate limited), then single calls for what is left
   const out = new Array(list.length).fill(null);
-  const starts = []; for (let i = 0; i < list.length; i += 20) starts.push(i);
-  await pmap(starts, 3, async s => {
-    const part = list.slice(s, s + 20);
+  const B = PUBLIC ? 10 : 20, starts = []; for (let i = 0; i < list.length; i += B) starts.push(i);
+  await pmap(starts, PUBLIC ? 1 : 3, async s => {
+    if (until() < 4000) return;                       // out of time: leave the rest unread (the scan says so)
+    const part = list.slice(s, s + B);
     let todo = part.map((_, k) => k);
-    if (batchWorks) {
-      for (const u of RPCS) {
-        try {
-          const j = await post(u, part.map((p, k) => ({ jsonrpc: '2.0', id: k, method, params: p })));
-          if (!Array.isArray(j)) { batchWorks = false; break; }
-          const miss = [];
-          for (const it of j) { if (it && it.result !== undefined && !it.error) out[s + it.id] = it.result; else if (it) miss.push(it.id); }
-          todo = todo.filter(k => miss.includes(k) || !j.some(it => it && it.id === k));
-          break;
-        } catch (e) { if (e.again) { await sleep(600); continue; } if (e.next) continue; batchWorks = false; break; }
+    for (const u of RPCS) {
+      if (!batchWorks || !todo.length) break;
+      for (let a = 0; a < (PUBLIC ? 5 : 3) && todo.length && until() > 5000; a++) {
+        let j;
+        try { j = await post(u, todo.map(k => ({ jsonrpc: '2.0', id: k, method, params: part[k] }))); }
+        catch (e) { if (!e.again) break; await sleep((PUBLIC ? 900 : 500) * (a + 1)); continue; }
+        if (!Array.isArray(j)) { if (limited(j)) { await sleep((PUBLIC ? 900 : 500) * (a + 1)); continue; } batchWorks = false; break; }
+        let rate = false;
+        for (const it of j) if (it && it.result !== undefined && !it.error) { out[s + it.id] = it.result; todo = todo.filter(k => k !== it.id); } else if (it && limited(it)) rate = true;
+        if (!rate) break;                               // whatever is still missing is not a rate limit: try it one by one
+        await sleep((PUBLIC ? 900 : 500) * (a + 1));
       }
     }
-    await pmap(todo, 3, async k => { try { out[s + k] = await rpc(method, part[k]); } catch { out[s + k] = null; } });
+    await pmap(todo, PUBLIC ? 2 : 3, async k => { try { out[s + k] = await rpc(method, part[k]); } catch { out[s + k] = null; } });
   });
   return out;
 }
@@ -248,7 +257,8 @@ async function devMoves(creator, mint, prog, t0, launchSig, left) {   // tokens 
 }
 
 // ---------- the scan ----------
-async function scan(mint) {
+function scan(mint) { return CLOCK.run({ end: Date.now() + HARD }, () => scanOnce(mint)); }
+async function scanOnce(mint) {
   const T0 = Date.now(), left = () => BUDGET - (Date.now() - T0);
   const mi = await rpc('getAccountInfo', [mint, { encoding: 'jsonParsed', commitment: 'confirmed' }]);
   const acc = mi && mi.value;
@@ -390,7 +400,7 @@ async function scan(mint) {
     dev: { launchPct: P(devLaunch), keptPct: P(devTaken), overCap: devLaunch > devCap, moves: dm.moves.map(m => ({ t: m.t, pct: P(m.raw), sig: m.sig })), movedPct: P(devOut), flags: devFlags },
     rules: { prelaunch: prelaunch.map(w => ({ owner: w.owner, pct: P(w.raw) })), block0, repeat, over, clusters: clusters.map(c => ({ ...c, pct: P(c.wallets.reduce((a, o) => a + ((per.get(o) || {}).raw || 0n), 0n)) })) },
     timeline,
-    read: { early: early.length, read: read.length, partial: early.length > read.length || fu.partial || dm.partial, rpc: process.env.RPC_URL ? 'custom' : 'public', ms: Date.now() - T0 },
+    read: { early: early.length, read: txs.filter(Boolean).length, partial: early.length > read.length || txs.some(t => !t) || fu.partial || dm.partial, rpc: process.env.RPC_URL ? 'custom' : 'public', ms: Date.now() - T0 },
     rules_used: RULES,
   };
 }
