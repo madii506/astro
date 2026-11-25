@@ -50,7 +50,7 @@ export async function runScan(mint, res, { onDone, scrollTo } = {}) {
 }
 
 function render(r, res) {
-  const T = r.totals, D = r.dev, rules = r.rules, clean = r.verdict === 'clean';
+  const T = r.totals, D = r.dev, rules = r.rules, clean = r.verdict === 'clean', unsure = r.verdict === 'unsure';   // unsure: nothing to stop, but not every first-minute transaction was read
   const name = esc(r.name || 'Unnamed coin'), sym = esc(r.symbol || '???');
   const flagged = new Map();
   for (const x of r.timeline) if (x.action !== 'pass' && x.side === 'buy' && x.owner !== r.creator) { const f = flagged.get(x.owner) || { owner: x.owner, why: x.why, action: x.action, pct: 0, t: x.t, slot: x.slot }; f.pct += x.pct; flagged.set(x.owner, f); }
@@ -67,9 +67,9 @@ function render(r, res) {
         <div class="res-sub"><a href="${solscan('token', r.mint)}" target="_blank" rel="noopener">${short(r.mint, 5)} ↗</a><span>launched ${r.launch.time ? ago(Date.now() - r.launch.time * 1000) + ' ago' : 'at an unknown time'}</span><span>${esc(r.venue || 'Solana')}${r.venue === 'pump.fun' ? (r.graduated ? ' · graduated' : ' · on the curve') : ''}</span>${r.creator ? `<a href="${solscan('account', r.creator)}" target="_blank" rel="noopener">dev ${short(r.creator)} ↗</a>` : ''}</div></div>
       <div class="acts" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn g sm" data-a="link">Copy link</button><a class="btn g sm" data-a="x" target="_blank" rel="noopener">Share on X</a></div>
     </div>
-    <div class="verdict ${clean ? 'clean' : ''}">
+    <div class="verdict ${clean ? 'clean' : unsure ? 'unsure' : ''}">
       <h3>${esc(r.headline)}</h3>
-      <div class="big"><b>${clean ? '0%' : pct(T.blockedPct, 1)}</b><span>${clean ? 'nothing to keep out' : 'of the supply the gate keeps out'}</span></div>
+      <div class="big">${unsure ? `<b>${r.read.read}/${r.read.early}</b><span>first-minute transactions read</span>` : `<b>${clean ? '0%' : pct(T.blockedPct, 1)}</b><span>${clean ? 'nothing to keep out' : 'of the supply the gate keeps out'}</span>`}</div>
     </div>
     <div class="res-stats">
       <div><b>${T.refused}</b><span>buys refused</span></div>
@@ -85,7 +85,7 @@ function render(r, res) {
         <div class="tl-key"><span><i style="background:var(--coral)"></i>refused</span><span><i style="background:var(--amber)"></i>trimmed</span><span><i style="background:var(--cream)"></i>passed</span><span><i style="background:var(--peach2)"></i>dev</span><span><i style="background:#6b6265"></i>sells</span></div>
         <div class="wl">${fl.length ? `<p class="res-h"><span>Wallets the gate stops</span><span>${fl.length}</span></p><div class="scroll"><table><thead><tr><th>Wallet</th><th>Why</th><th>Bought</th><th>When</th></tr></thead><tbody>
           ${fl.map(f => `<tr><td class="addr"><a href="${solscan('account', f.owner)}" target="_blank" rel="noopener">${short(f.owner, 5)}</a></td><td><span class="chip ${f.action === 'trim' ? 'trim' : 'no'}" title="${esc(WHY[f.why][1])}">${WHY[f.why][0]}</span></td><td>${pct(f.pct)}</td><td>${f.slot === -1 ? 'before' : f.slot === 0 ? 'block 0' : `${f.t}s`}</td></tr>`).join('')}
-          </tbody></table></div>` : '<p class="res-h"><span>Wallets the gate stops</span><span>none</span></p><p style="margin:0;font-size:14.5px">Every first-minute buyer would have got in.</p>'}</div>
+          </tbody></table></div>` : `<p class="res-h"><span>Wallets the gate stops</span><span>none</span></p><p style="margin:0;font-size:14.5px">${unsure ? 'Every first-minute buyer Astro read would have got in.' : 'Every first-minute buyer would have got in.'}</p>`}</div>
       </div>
       <div class="res-right">
         <p class="res-h"><span>The five rules</span></p>
@@ -100,14 +100,14 @@ function render(r, res) {
           <div class="cd">${c.kind === 'payer' ? 'signer' : 'funder'} <a href="${solscan('account', c.via)}" target="_blank" rel="noopener">${short(c.via, 6)}</a></div>${graph(c)}</div>`).join('')}</div>` : ''}
       </div>
     </div>
-    <div class="res-foot"><span>Read ${r.read.read} of ${r.read.early} first-minute transactions in ${(r.read.ms / 1000).toFixed(1)}s from Solana${r.read.partial ? ' · partial read: Solana was slow, so some checks are incomplete' : ''}. Not financial advice.</span>
+    <div class="res-foot"><span>Read ${r.read.read} of ${r.read.early} first-minute transactions in ${(r.read.ms / 1000).toFixed(1)}s from Solana${r.read.partial ? (r.read.read < r.read.early ? ' · the rest went unread, so these numbers are a minimum' : ' · Solana was slow, so the funding and dev checks are incomplete') : ''}. Not financial advice.</span>
       <span class="acts"><a class="btn g sm" href="${solscan('tx', r.launch.sig)}" target="_blank" rel="noopener">Launch tx ↗</a></span></div>
   </div>`;
   const img = res.querySelector('.res-img');
   if (r.image) { const im = new Image(); im.alt = ''; im.referrerPolicy = 'no-referrer'; im.onload = () => { img.textContent = ''; img.append(im); }; im.onerror = () => { }; im.src = r.image; }
   img.append(identicon(r.mint, 72));
   res.querySelector('[data-a="link"]').onclick = () => copy(shareLink(r.mint), 'Link copied');
-  const verb = clean ? 'passed the Astro gate clean' : `would have been stopped at the Astro gate: ${r.headline.replace(/^The gate would have /, '').replace(/\.$/, '')}`;
+  const verb = clean ? 'passed the Astro gate clean' : unsure ? `showed nothing for the Astro gate to stop in the ${r.read.read} first-minute transactions read` : `would have been stopped at the Astro gate: ${r.headline.replace(/^The gate would have /, '').replace(/\.$/, '')}`;
   res.querySelector('[data-a="x"]').href = `https://x.com/intent/tweet?text=${encodeURIComponent(`I ran $${r.symbol || 'this coin'} through the gate. It ${verb}.\n\n${shareLink(r.mint)}`)}`;
   timeline(res.querySelector('.tl canvas'), r);
 }

@@ -33,7 +33,7 @@ function drawSaved() {
   if (!l.length) { root.innerHTML = '<div class="empty">No scans yet. Every coin you scan shows up here, in this browser only.<br><a class="btn p sm" href="#scan">Scan a coin</a></div>'; return; }
   root.innerHTML = `<div class="wrapx"><table><thead><tr><th>Coin</th><th>Gate</th><th>Kept out</th><th>Scanned</th><th></th></tr></thead><tbody>${l.map(s => `<tr data-m="${esc(s.mint)}">
     <td><b>${esc(s.name || 'Unnamed')}</b> <span class="mono dim">$${esc(s.symbol || '?')}</span><br><span class="mono dim" style="font-size:12px">${esc(short(s.mint, 6))}</span></td>
-    <td>${s.verdict === 'clean' ? '<span class="chip ok">clean</span>' : `<span class="chip no">${s.refused} refused</span>`}</td>
+    <td>${s.verdict === 'clean' ? '<span class="chip ok">clean</span>' : s.verdict === 'unsure' ? '<span class="chip mute">clean so far</span>' : `<span class="chip no">${s.refused ? s.refused + ' refused' : 'flagged'}</span>`}</td>
     <td>${pct(s.blocked, 1)}</td><td>${ago(Date.now() - s.at)} ago</td>
     <td class="r"><a class="btn g sm" href="#scan/${encodeURIComponent(s.mint)}">Rescan</a> <button class="btn g sm" data-copy type="button">Copy CA</button> <button class="btn g sm" data-del type="button" aria-label="Remove">✕</button></td></tr>`).join('')}</tbody></table></div>`;
   root.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { forget(b.closest('tr').dataset.m); drawSaved(); });
