@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="/img/fav-180.png">
 <meta property="og:title" content="Astro docs"><meta property="og:description" content="The fair launchpad with its own chain."><meta property="og:image" content="/img/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preload" href="/fonts/pixelify.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/pixelify.woff2?v=2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/css/astro.css?v=1">
 <script type="module" src="/js/docs.js?v=1"></script>
 </head>
@@ -138,6 +138,7 @@
       <ul>
         <li><b>Funding more than one hop back.</b> The scan follows the money one step. A funder who routes through a middle wallet first won't be grouped.</li>
         <li><b>Very busy coins.</b> Reaching the launch means walking back through a coin's whole history. On the public RPC that stops at about 30,000 transactions; with a faster RPC, about 120,000.</li>
+        <li><b>Busy first minutes.</b> The scan reads up to 140 first-minute transactions. When there were more, or Solana didn't send them all in time, the result says how many it read, and a clean result is only "clean so far".</li>
         <li><b>Other wallets of the dev.</b> The dev check reads one creator wallet, not other wallets the creator might control.</li>
         <li><b>Wallets that are programs.</b> A buyer whose wallet is itself a program account, like some multisig vaults, is treated as a pool and left out.</li>
         <li><b>Pools that opened much later.</b> For a token minted first and pooled later, the scan looks for the pool opening in the first 12 transactions of its history.</li>
@@ -179,14 +180,14 @@
       <h3>Response</h3>
       <table><thead><tr><th>Field</th><th>Type</th><th>What it is</th></tr></thead><tbody>
         <tr><td><code>ok</code></td><td>boolean</td><td><code>false</code> with an <code>error</code> message when the scan couldn't run.</td></tr>
-        <tr><td><code>verdict</code></td><td>string</td><td><code>clean</code> or <code>blocked</code>.</td></tr>
+        <tr><td><code>verdict</code></td><td>string</td><td><code>clean</code>, <code>blocked</code>, or <code>unsure</code> when nothing broke a rule but not every first-minute transaction could be read.</td></tr>
         <tr><td><code>venue</code></td><td>string</td><td>Where it launched, when we can tell: <code>pump.fun</code>, <code>Raydium LaunchLab</code>, <code>Meteora</code>, <code>Raydium</code>, <code>Moonshot</code>, <code>Orca</code>, <code>PumpSwap</code>, or <code>Solana</code>.</td></tr>
         <tr><td><code>headline</code></td><td>string</td><td>One sentence describing what the gate would have done.</td></tr>
         <tr><td><code>totals</code></td><td>object</td><td><code>refused</code>, <code>trimmed</code>, <code>wallets</code>, <code>blockedPct</code>, <code>buys</code>, <code>buyers</code>, <code>fresh</code>.</td></tr>
         <tr><td><code>dev</code></td><td>object</td><td><code>launchPct</code>, <code>overCap</code>, <code>moves</code> (sells and transfers in the first day), <code>movedPct</code>.</td></tr>
         <tr><td><code>rules</code></td><td>object</td><td><code>prelaunch</code>, <code>block0</code>, <code>repeat</code>, <code>over</code> and <code>clusters</code> (groups of wallets that shared a funder or signer).</td></tr>
         <tr><td><code>timeline</code></td><td>array</td><td>Every first-minute event: seconds after launch, slot offset, wallet, side, % of supply, and what the gate did.</td></tr>
-        <tr><td><code>read</code></td><td>object</td><td>How much was read, whether it was partial, and how long it took.</td></tr>
+        <tr><td><code>read</code></td><td>object</td><td><code>read</code> of <code>early</code> first-minute transactions, whether anything was left unread (<code>partial</code>), and how long it took.</td></tr>
       </tbody></table>
       <p>Errors come back with <code>ok: false</code> and a plain-English <code>error</code>, for example when the address isn't a token.</p>
     </section>
