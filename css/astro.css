@@ -1,4 +1,4 @@
-@font-face { font-family: 'Pixelify'; src: url('/fonts/pixelify.woff2') format('woff2'); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: 'Pixelify'; src: url('/fonts/pixelify.woff2?v=2') format('woff2'); font-weight: 400 700; font-display: swap; }
 @font-face { font-family: 'Inter'; src: url('/fonts/inter.woff2') format('woff2'); font-weight: 400 700; font-display: swap; }
 @font-face { font-family: 'JBM'; src: url('/fonts/mono.woff2') format('woff2'); font-weight: 400 600; font-display: swap; }
 :root {
@@ -271,6 +271,8 @@ main { position: relative; z-index: 2; }
 .verdict .big { text-align: right; }
 .verdict .big b { display: block; font: 700 clamp(46px, 5vw, 64px)/1 var(--px); color: var(--coral); text-shadow: 0 0 30px rgba(255, 106, 88, .3); }
 .verdict.clean .big b { color: var(--mint); text-shadow: 0 0 30px rgba(159, 226, 191, .3); }
+.verdict.unsure { background: linear-gradient(90deg, rgba(255, 207, 134, .07), transparent 70%); }
+.verdict.unsure .big b { color: var(--amber); text-shadow: 0 0 30px rgba(255, 207, 134, .26); }
 .verdict .big span { font: 500 12.5px/1.3 var(--mono); color: var(--dim); }
 .res-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
 .res-stats div { padding: 20px 22px; border-right: 1px solid var(--line); }
