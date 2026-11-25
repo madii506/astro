@@ -30,21 +30,20 @@
 <header class="nav" id="nav">
   <div></div>
   <nav class="nav-links" aria-label="Sections">
-    <a href="#gate">Gate</a><a href="#rules">Rules</a><a href="#chain">Chain</a><a href="#scan">Scan</a><a href="#live">Live</a><a href="#plan">Plan</a><a href="#faq">FAQ</a><a class="app" href="/app">Open app</a>
+    <a href="#gate">Gate</a><a href="#rules">Rules</a><a href="#chain">Chain</a><a href="#scan">Scan</a><a href="#plan">Plan</a><a href="#faq">FAQ</a><a class="app" href="/app">Open app</a>
   </nav>
   <button class="nav-burger" id="burger" type="button" aria-label="Open menu"><i></i></button>
 </header>
 <div class="sheet" id="sheet" aria-hidden="true">
   <button class="x" id="sheetX" type="button" aria-label="Close menu">✕</button>
-  <a href="#gate">Gate</a><a href="#rules">Rules</a><a href="#chain">Chain</a><a href="#scan">Scan</a><a href="#live">Live</a><a href="#plan">Plan</a><a href="#faq">FAQ</a><a href="/app">Open app</a><a href="/docs">Docs</a>
+  <a href="#gate">Gate</a><a href="#rules">Rules</a><a href="#chain">Chain</a><a href="#scan">Scan</a><a href="#plan">Plan</a><a href="#faq">FAQ</a><a href="/app">Open app</a><a href="/docs">Docs</a>
 </div>
 <nav class="rail" id="rail" aria-label="Countdown">
-  <a href="#trench"><b>T−8</b><span>The trench</span></a>
-  <a href="#gate"><b>T−7</b><span>The gate</span></a>
-  <a href="#rules"><b>T−6</b><span>Five rules</span></a>
-  <a href="#chain"><b>T−5</b><span>Its own chain</span></a>
-  <a href="#scan"><b>T−4</b><span>Try the gate</span></a>
-  <a href="#live"><b>T−3</b><span>Live gate</span></a>
+  <a href="#trench"><b>T−7</b><span>The trench</span></a>
+  <a href="#gate"><b>T−6</b><span>The gate</span></a>
+  <a href="#rules"><b>T−5</b><span>Five rules</span></a>
+  <a href="#chain"><b>T−4</b><span>Its own chain</span></a>
+  <a href="#scan"><b>T−3</b><span>Try the gate</span></a>
   <a href="#plan"><b>T−2</b><span>Flight plan</span></a>
   <a href="#faq"><b>T−1</b><span>Questions</span></a>
   <a href="#liftoff"><b>T−0</b><span>Liftoff</span></a>
@@ -63,25 +62,14 @@
       <button class="btn p" type="submit">Scan <span class="ar">→</span></button>
     </form>
     <div class="hero-meta"><a class="how" href="#gate">How the gate works ↓</a><span id="heroCa"></span></div>
-    <div class="tape" id="tape">
-      <div class="tape-label"><span class="dot off" id="tapeDot"></span>LIVE LAUNCHES</div>
-      <div class="tape-track" id="tapeTrack"><span class="tape-empty">Connecting to the live feed…</span></div>
-    </div>
   </section>
 
-  <!-- T-8 -->
+  <!-- T-7 -->
   <section class="sec trench" id="trench">
     <div class="wrap">
-      <p class="kick rv"><b>T−8</b>The trench</p>
+      <p class="kick rv"><b>T−7</b>The trench</p>
       <h2 class="h2 rv">Most launches are decided <em>before you can click.</em></h2>
       <p class="lede rv">A coin goes live, and in that same block bots have already bought. Twenty wallets funded by one person take a third of the supply. The dev sells into your first buy. By the time a human sees the chart, the launch is over, and the people who came early were never people.</p>
-      <div class="counters rv" id="counters">
-        <div class="counter"><div class="n" data-k="seen">—</div><div class="l">new launches watched since you opened this page</div></div>
-        <div class="counter"><div class="n hot" data-k="rush">—</div><div class="l">saw over 1% of supply bought in the first seconds</div></div>
-        <div class="counter"><div class="n hot" data-k="devcap">—</div><div class="l">had a dev buy more than 3% at launch</div></div>
-        <div class="counter"><div class="n hot" data-k="devsold">—</div><div class="l">had a dev sell within three minutes</div></div>
-      </div>
-      <div class="counters-foot rv"><span class="dot off" id="ctrDot"></span><span id="ctrNote">Connecting to the live feed…</span></div>
       <div class="pains">
         <article class="pain rv" style="--d:0"><span data-icon="sniper"></span><h3 class="h3">Snipers</h3><p>Bots watch for new coins and buy in the launch block itself, often bundled right next to the create transaction. Nobody beats a buy that lands before the chart exists.</p></article>
         <article class="pain rv" style="--d:1"><span data-icon="bundle"></span><h3 class="h3">Bundles</h3><p>One person funds twenty fresh wallets and buys with all of them at once. On the chart it looks like twenty believers. It's one hand on a third of the supply.</p></article>
@@ -90,12 +78,12 @@
     </div>
   </section>
 
-  <!-- T-7: pinned replay -->
+  <!-- T-6: pinned replay -->
   <section class="sec gate" id="gate" aria-label="The gate, step by step">
     <div class="gate-pin" id="gatePin">
       <div class="gate-stick">
         <div class="gate-copy">
-          <p class="kick"><b>T−7</b>The gate</p>
+          <p class="kick"><b>T−6</b>The gate</p>
           <div style="position:relative">
             <div class="gate-step on"><div class="num">01 <i>/ 06</i></div><h3>Block zero belongs to the launch.</h3><p>On Astro, a coin is born in a block of its own. The creator's first buy goes in with it, capped at 3% of the supply. Nothing else fits in that block: not a sniper, not a bundle, not a friend of the dev.</p><div class="rule">RULE 1 · no buys in the launch block</div></div>
             <div class="gate-step"><div class="num">02 <i>/ 06</i></div><h3>Snipers bounce.</h3><p>Bots that try to land in the launch block don't get a worse price. They get refused. The gate checks the block before it checks anything else, so being fastest stops being an edge.</p><div class="rule">RULE 1 · refused, not front-run</div></div>
@@ -114,10 +102,10 @@
     </div>
   </section>
 
-  <!-- T-6 -->
+  <!-- T-5 -->
   <section class="sec" id="rules">
     <div class="wrap">
-      <p class="kick rv"><b>T−6</b>Five rules</p>
+      <p class="kick rv"><b>T−5</b>Five rules</p>
       <h2 class="h2 rv">Five rules. <em>No exceptions.</em> No settings.</h2>
       <p class="lede rv">Every coin on Astro launches under the same rules. A creator can't switch them off, and nobody can pay to skip them. They're checked for every transaction before it reaches a block.</p>
       <div class="rules-grid">
@@ -131,10 +119,10 @@
     </div>
   </section>
 
-  <!-- T-5 -->
+  <!-- T-4 -->
   <section class="sec" id="chain">
     <div class="wrap">
-      <p class="kick rv"><b>T−5</b>Its own chain</p>
+      <p class="kick rv"><b>T−4</b>Its own chain</p>
       <h2 class="h2 rv">Rules a launchpad can't enforce, <em>a chain can.</em></h2>
       <p class="lede rv">On Solana, a launchpad is a program. It can't choose which transactions share a block with the launch, it can't see where a wallet's money came from, and it can't stop a bundle that pays to go first. Astro is a chain built for launches. The gate sits in front of the block producer, so every rule is checked before a transaction is ever included.</p>
       <div class="versus rv" id="versus">
@@ -157,10 +145,10 @@
     </div>
   </section>
 
-  <!-- T-4 -->
+  <!-- T-3 -->
   <section class="sec" id="scan">
     <div class="wrap">
-      <p class="kick rv"><b>T−4</b>Try the gate</p>
+      <p class="kick rv"><b>T−3</b>Try the gate</p>
       <h2 class="h2 rv">Run any launch <em>through the gate.</em></h2>
       <p class="lede rv">Paste any Solana token: a pump.fun coin, a bonk or Meteora launch, a fresh Raydium pool. Astro finds the moment trading opened and reads the minute after it straight from Solana: who bought in the launch block, who held tokens before it opened, which wallets were funded by the same hand, who bought twice, who took more than 1%, and what the dev did on day one. Then it shows you exactly what the gate would have refused.</p>
       <div class="scan-box rv">
@@ -176,16 +164,6 @@
     </div>
   </section>
 
-  <!-- T-3 -->
-  <section class="sec" id="live">
-    <div class="wrap">
-      <p class="kick rv"><b>T−3</b>Live gate</p>
-      <h2 class="h2 rv">Every new launch, <em>checked as it happens.</em></h2>
-      <p class="lede rv">This board listens to new launches in real time. Each new coin gets a live check against what can be seen from the outside: the dev's launch buy, how much went in the first seconds, wallets taking over 1%, wallets buying twice, and a dev who sells. Tap any coin for the full on-chain scan.</p>
-      <div class="board rv" id="board"></div>
-    </div>
-  </section>
-
   <!-- T-2 -->
   <section class="sec" id="plan">
     <div class="wrap">
@@ -193,7 +171,7 @@
       <h2 class="h2 rv">Built in the open, <em>one stage at a time.</em></h2>
       <div class="plan" id="planList">
         <div class="plan-fill" id="planFill"></div>
-        <div class="stage live rv"><div class="pip">01</div><div><h3>Ground</h3><p>The gate's logic, running today on Solana's real data, so you can see what it would stop before the chain exists.</p><ul><li>The gate scan for any Solana launch</li><li>The live gate on every new launch</li><li>A public scan API anyone can build on</li></ul></div><span class="chip ok when">live now</span></div>
+        <div class="stage live rv"><div class="pip">01</div><div><h3>Ground</h3><p>The gate's logic, running today on Solana's real data, so you can see what it would stop before the chain exists.</p><ul><li>The gate scan for any Solana launch</li><li>Launch cards for your coin</li><li>A public scan API anyone can build on</li></ul></div><span class="chip ok when">live now</span></div>
         <div class="stage rv"><div class="pip">02</div><div><h3>Static fire</h3><p>A public test network with the gate switched on for real. Test launches, test buys, the five rules enforced by the chain. Anyone can try to break it.</p><ul><li>Testnet with the gate in front of the sequencer</li><li>Explorer and a read-only RPC</li><li>Open rule tests anyone can run</li></ul></div><span class="chip mute when">next</span></div>
         <div class="stage rv"><div class="pip">03</div><div><h3>Liftoff</h3><p>Mainnet genesis. The bridge vault opens, $ASTRO becomes the chain's own unit, and the first fair launches go live.</p><ul><li>Bridge between Solana and Astro</li><li>The first launches on Astro</li><li>Launch fees paid in $ASTRO</li></ul></div><span class="chip mute when">after testnet</span></div>
         <div class="stage rv"><div class="pip">04</div><div><h3>Orbit</h3><p>More block producers, published rule upgrades with notice, and tools for anyone who wants to build on a fair chain.</p><ul><li>More block producers</li><li>Rule upgrades announced in advance</li><li>An SDK for builders</li></ul></div><span class="chip mute when">later</span></div>
@@ -207,7 +185,7 @@
       <p class="kick rv"><b>T−1</b>Questions</p>
       <h2 class="h2 rv">The obvious questions, <em>answered first.</em></h2>
       <div class="faq">
-        <details class="qa rv"><summary>Is Astro live?<i></i></summary><div class="ans"><div><p>Partly, and we'd rather say exactly which part. The gate scan and the live gate are live today and read real Solana data. The Astro chain itself isn't live yet: it goes to a public testnet first, then mainnet.</p></div></div></details>
+        <details class="qa rv"><summary>Is Astro live?<i></i></summary><div class="ans"><div><p>Partly, and we'd rather say exactly which part. The gate scan is live today and reads real Solana data. The Astro chain itself isn't live yet: it goes to a public testnet first, then mainnet.</p></div></div></details>
         <details class="qa rv"><summary>Why does a launchpad need its own chain?<i></i></summary><div class="ans"><div><p>Because the tricks happen before a launchpad's program ever runs. On Solana, whoever pays the block producer the most decides what shares the launch block, and a program can't see who funded a wallet. Astro puts its rules in front of the block producer, where they can actually be enforced.</p></div></div></details>
         <details class="qa rv"><summary>How does the gate know wallets are bundled?<i></i></summary><div class="ans"><div><p>It follows the money one step back. When a wallet tries to buy, the gate checks which address sent it SOL in the last 24 hours. If that address already funded another buyer of the same coin, the buy is refused. One funder, one wallet.</p></div></div></details>
         <details class="qa rv"><summary>Can't a sniper just use exchange withdrawals?<i></i></summary><div class="ans"><div><p>They can, which is why exchange hot wallets don't count as a shared funder. But it doesn't help much: in the first minute every wallet gets one buy of at most 1%, at the same price as everyone else. Fifty fresh wallets buy fifty small slices, never the launch block.</p></div></div></details>
@@ -216,7 +194,7 @@
         <details class="qa rv"><summary>Is a clean launch a safe coin?<i></i></summary><div class="ans"><div><p>No. A clean launch means nobody cheated at the start. The coin can still go to zero. Nothing on this site is financial advice.</p></div></div></details>
         <details class="qa rv"><summary>Who runs the chain?<i></i></summary><div class="ans"><div><p>At launch, one sequencer run by the team, like most new chains. The rules, the code and every block are public, and anyone can run a read-only node to check that the gate did what it says. More block producers come in a later stage.</p></div></div></details>
         <details class="qa rv"><summary>Can the rules change?<i></i></summary><div class="ans"><div><p>Only in the open. Any change to a rule is published with its reasoning before it takes effect, and coins launched under the old rules keep them.</p></div></div></details>
-        <details class="qa rv"><summary>Do I need a wallet to use the scanner?<i></i></summary><div class="ans"><div><p>No. The scan and the live gate only read public data. Nothing asks you to connect a wallet or sign anything.</p></div></div></details>
+        <details class="qa rv"><summary>Do I need a wallet to use the scanner?<i></i></summary><div class="ans"><div><p>No. The scan only reads public data. Nothing asks you to connect a wallet or sign anything.</p></div></div></details>
       </div>
     </div>
   </section>
@@ -224,10 +202,7 @@
   <!-- T-0: the wordmark comes back together behind this -->
   <section class="sec lift" id="liftoff">
     <p class="kick rv"><b>T−0</b>Liftoff</p>
-    <h2 class="h2 rv">Everyone starts <em>on the same block.</em></h2>
-    <p class="lede rv" style="margin:0 auto">No head starts. No masks. No dev exits. Just a launch.</p>
     <div class="acts rv"><a class="btn p" href="/app">Open the app <span class="ar">→</span></a><a class="btn g" href="/docs">Read the docs</a><a class="btn g" id="xLink" hidden target="_blank" rel="noopener">Follow on X</a></div>
-    <p class="fine rv">The Astro chain is not live yet. The gate scan and the live gate read public Solana data. Nothing here is financial advice: a fair launch can still go to zero.</p>
   </section>
 </main>
 </body>

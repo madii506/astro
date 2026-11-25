@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Astro · docs</title>
-<meta name="description" content="How Astro's gate works: the five rules, the chain, the gate scan, the live gate, and the public API.">
+<meta name="description" content="How Astro's gate works: the five rules, the chain, the gate scan and the public API.">
 <meta name="theme-color" content="#141315">
 <link rel="icon" type="image/png" sizes="32x32" href="/img/fav-32.png">
 <link rel="icon" type="image/png" sizes="64x64" href="/img/fav-64.png">
@@ -29,7 +29,7 @@
   <nav class="dnav" id="dnav" aria-label="Docs">
     <div class="g">Start</div><a href="#overview">What Astro is</a><a href="#status">What's live today</a>
     <div class="g">The gate</div><a href="#why">Why its own chain</a><a href="#rules">The five rules</a><a href="#minute">A launch, minute by minute</a>
-    <div class="g">Tools</div><a href="#scan">The gate scan</a><a href="#reading">Reading a result</a><a href="#live">The live gate</a><a href="#limits">What the tools can't see</a>
+    <div class="g">Tools</div><a href="#scan">The gate scan</a><a href="#reading">Reading a result</a><a href="#limits">What the tools can't see</a>
     <div class="g">The chain</div><a href="#architecture">How the chain runs</a><a href="#bridge">The bridge and $ASTRO</a><a href="#fees">Fees</a>
     <div class="g">Build</div><a href="#api">Public API</a>
     <div class="g">More</div><a href="#risks">Risks</a><a href="#glossary">Glossary</a>
@@ -44,7 +44,7 @@
       <h2>What Astro is</h2>
       <p>Astro is a launchpad with its own chain. Coins launch on a bonding curve, like on pump.fun, but every transaction has to get through a gate before it can reach a block. The gate checks five rules: nobody but the creator buys in the launch block, every wallet gets one buy of at most 1% in the first minute, wallets that share a funder can't all buy, the creator's buy is capped at 3%, and the creator's tokens are locked for a day.</p>
       <p>The point isn't to pick winners. It's to make the start of every launch fair, so that the first minute belongs to people instead of bots, bundles and the dev.</p>
-      <div class="note"><b class="i">!</b><p><b>The most important thing first:</b> the Astro chain is not live yet. What runs today is the gate's logic applied to real Solana data: a scan for any Solana launch and a live check of new launches as they happen. The chain goes to a public testnet before it goes anywhere else.</p></div>
+      <div class="note"><b class="i">!</b><p><b>The most important thing first:</b> the Astro chain is not live yet. What runs today is the gate's logic applied to real Solana data: a scan for any Solana launch. The chain goes to a public testnet before it goes anywhere else.</p></div>
     </section>
 
     <section id="status">
@@ -52,7 +52,6 @@
       <h2>What's live today</h2>
       <table><thead><tr><th>Part</th><th>Status</th><th>What it does</th></tr></thead><tbody>
         <tr><td>Gate scan</td><td><span class="chip ok">live</span></td><td>Reads any Solana token's launch, from pump.fun, bonk, Meteora, Raydium, Moonshot or anywhere else, and replays it through the five rules.</td></tr>
-        <tr><td>Live gate</td><td><span class="chip ok">live</span></td><td>Listens to new launches as they happen and checks each one, as it trades, against the rules visible from outside.</td></tr>
         <tr><td>Public scan API</td><td><span class="chip ok">live</span></td><td><code>GET /api/scan?mint=…</code>, the same scan as JSON. See <a href="#api">Public API</a>.</td></tr>
         <tr><td>Launch card</td><td><span class="chip ok">live</span></td><td>Makes a PNG of your coin with the rules it launches under. Runs in your browser.</td></tr>
         <tr><td>Astro testnet</td><td><span class="chip mute">next</span></td><td>The gate in front of a real sequencer, with test launches anyone can try to break.</td></tr>
@@ -133,28 +132,12 @@
       <div class="note"><b class="i">i</b><p>A clean result means nothing in the first minute broke a rule. It doesn't mean the coin is good, and it doesn't mean the team is honest. Nothing here is financial advice.</p></div>
     </section>
 
-    <section id="live">
-      <p class="ey">08 / Tools</p>
-      <h2>The live gate</h2>
-      <p>The live gate listens to PumpPortal's public stream of new launches and their trades, directly from your browser. It carries pump.fun and the other launchpads PumpPortal covers, and each row shows which one. Each new coin is followed for three minutes and checked against what can be seen from outside the chain:</p>
-      <ul>
-        <li><b>Dev buy:</b> the creator's buy in the create transaction, as a share of supply. Over 3% is flagged.</li>
-        <li><b>First seconds:</b> supply bought in the first 2.5 seconds, plus supply that left the curve before the stream could show it, worked out from the curve's reserves. Over 1% is flagged.</li>
-        <li><b>Over 1%:</b> wallets that took more than 1% in a single buy in the first minute.</li>
-        <li><b>Bought twice:</b> wallets with more than one buy in the first minute.</li>
-        <li><b>Dev sold:</b> the creator selling while the coin is being watched.</li>
-      </ul>
-      <p>A coin counts as clean once it has traded for 20 seconds with nothing flagged. Counters on the page start at zero when you open it and only count what your browser has seen.</p>
-    </section>
-
     <section id="limits">
-      <p class="ey">09 / Tools</p>
+      <p class="ey">08 / Tools</p>
       <h2>What the tools can't see</h2>
       <ul>
         <li><b>Funding more than one hop back.</b> The scan follows the money one step. A funder who routes through a middle wallet first won't be grouped.</li>
         <li><b>Very busy coins.</b> Reaching the launch means walking back through a coin's whole history. On the public RPC that stops at about 30,000 transactions; with a faster RPC, about 120,000.</li>
-        <li><b>Shared funders on the live gate.</b> Tracing funders takes several reads per wallet, so the live board leaves it to the full scan.</li>
-        <li><b>The first block on the live gate.</b> The stream can lag a launch by a block or two. Buys from that gap are measured from the curve's reserves, but not who made them.</li>
         <li><b>Other wallets of the dev.</b> The dev check reads one creator wallet, not other wallets the creator might control.</li>
         <li><b>Wallets that are programs.</b> A buyer whose wallet is itself a program account, like some multisig vaults, is treated as a pool and left out.</li>
         <li><b>Pools that opened much later.</b> For a token minted first and pooled later, the scan looks for the pool opening in the first 12 transactions of its history.</li>
@@ -162,7 +145,7 @@
     </section>
 
     <section id="architecture">
-      <p class="ey">10 / The chain</p>
+      <p class="ey">09 / The chain</p>
       <h2>How the chain runs</h2>
       <p>Astro is built in three layers:</p>
       <ul>
@@ -174,21 +157,21 @@
     </section>
 
     <section id="bridge">
-      <p class="ey">11 / The chain</p>
+      <p class="ey">10 / The chain</p>
       <h2>The bridge and $ASTRO</h2>
       <p>$ASTRO is a token on Solana. On the Astro chain it's the native unit: launches are paid in it and bonding curves are priced in it. It moves between the two one-for-one through a vault on Solana. Deposits into the vault are minted on Astro; burns on Astro are paid out of the vault. Every deposit and withdrawal is public on both sides.</p>
       <div class="note warn"><b class="i">!</b><p>At launch the vault is operated by the team. That's a trust assumption, and we'd rather say it plainly than hide it. The vault's balance and every movement are public so anyone can check it matches the supply on Astro.</p></div>
     </section>
 
     <section id="fees">
-      <p class="ey">12 / The chain</p>
+      <p class="ey">11 / The chain</p>
       <h2>Fees</h2>
       <p>Launches and trades on Astro pay fees in $ASTRO. The exact numbers are published before the testnet, together with where every fee goes. Until then, anything you see quoted elsewhere isn't from us.</p>
       <p>The tools on this site are free and need no wallet.</p>
     </section>
 
     <section id="api">
-      <p class="ey">13 / Build</p>
+      <p class="ey">12 / Build</p>
       <h2>Public API</h2>
       <p>The gate scan is a plain JSON endpoint. No key, no sign-up. Please cache what you fetch.</p>
       <pre><code>GET /api/scan?mint=&lt;any Solana token contract address&gt;</code></pre>
@@ -209,7 +192,7 @@
     </section>
 
     <section id="risks">
-      <p class="ey">14 / More</p>
+      <p class="ey">13 / More</p>
       <h2>Risks</h2>
       <ul>
         <li><b>A fair start isn't a safe coin.</b> Most coins go to zero, fair or not.</li>
@@ -220,7 +203,7 @@
     </section>
 
     <section id="glossary">
-      <p class="ey">15 / More</p>
+      <p class="ey">14 / More</p>
       <h2>Glossary</h2>
       <table><tbody>
         <tr><td>Launch block</td><td>The block a coin is created in. Block 0.</td></tr>

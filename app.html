@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Astro · app</title>
-<meta name="description" content="Scan any Solana launch through Astro's gate, watch new launches live, and make a launch card.">
+<meta name="description" content="Scan any Solana launch through Astro's gate and make a launch card.">
 <meta name="theme-color" content="#141315">
 <link rel="icon" type="image/png" sizes="32x32" href="/img/fav-32.png">
 <link rel="icon" type="image/png" sizes="64x64" href="/img/fav-64.png">
@@ -23,15 +23,13 @@
     <a class="brand" href="/"><img src="/img/fav-64.png" alt=""><b>astro</b></a>
     <div class="grp">The gate</div>
     <a class="it" href="#scan" data-v="scan"><span data-i="scan"></span>Scan a coin</a>
-    <a class="it" href="#live" data-v="live"><span data-i="live"></span>Live gate<span class="n" id="nLive"></span></a>
-    <a class="it" href="#clean" data-v="clean"><span data-i="clean"></span>Clean launches<span class="n" id="nClean"></span></a>
     <div class="grp">Make</div>
     <a class="it" href="#card" data-v="card"><span data-i="card"></span>Launch card</a>
     <a class="it" href="#saved" data-v="saved"><span data-i="saved"></span>Saved scans<span class="n" id="nSaved"></span></a>
     <div class="grp">More</div>
     <a class="it" href="/docs"><span data-i="docs"></span>Docs</a>
     <a class="it" href="/"><span data-i="home"></span>Home</a>
-    <div class="foot"><div class="feed"><span class="dot off" id="feedDot"></span><span id="feedTxt">Connecting to the live feed…</span></div><div id="sideCa"></div></div>
+    <div class="foot"><div id="sideCa"></div></div>
   </aside>
 
   <main class="main">
@@ -48,25 +46,7 @@
       <div class="res" id="scanRes" aria-live="polite"></div>
     </section>
 
-    <!-- live -->
-    <section class="view" id="v-live" data-view="live">
-      <div class="topbar"><div><h1>Live gate</h1><div class="sub">Every new launch on the live feed, checked against the rules you can see from outside the chain.</div></div>
-        <form class="quick" data-quick><input placeholder="Paste a coin to scan" spellcheck="false"><button class="btn p sm" type="submit">Scan</button></form></div>
-      <div class="statrow" id="liveStats">
-        <div class="stat"><b data-k="seen">—</b><span>launches since you opened the app</span></div>
-        <div class="stat"><b class="hot" data-k="flagged">—</b><span>flagged by at least one rule</span></div>
-        <div class="stat"><b class="hot" data-k="rush">—</b><span>over 1% bought in the first seconds</span></div>
-        <div class="stat"><b class="hot" data-k="devsold">—</b><span>devs who sold within three minutes</span></div>
-      </div>
-      <div class="board" id="board" style="margin-top:0"></div>
-    </section>
 
-    <!-- clean -->
-    <section class="view" id="v-clean" data-view="clean">
-      <div class="topbar"><div><h1>Clean launches</h1><div class="sub">New coins with nothing flagged after their first 20 seconds, biggest first. Clean means a fair start, not a good coin.</div></div>
-        <form class="quick" data-quick><input placeholder="Paste a coin to scan" spellcheck="false"><button class="btn p sm" type="submit">Scan</button></form></div>
-      <div class="cards" id="cleanCards"></div>
-    </section>
 
     <!-- card -->
     <section class="view" id="v-card" data-view="card">
