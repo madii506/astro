@@ -1,10 +1,11 @@
 // Astro API. No keys, no database, nothing signed here. Two jobs:
 //   GET /api/config        the site's public settings (contract address and X link once they exist)
-//   GET /api/scan?mint=…   the gate scan: read one pump.fun launch from Solana and replay it through Astro's five rules
+//   GET /api/scan?mint=…   the gate scan: read any Solana launch from the chain and replay it through Astro's five rules
 const crypto = require('node:crypto');
 
-const RPCS = [process.env.RPC_URL, 'https://api.mainnet-beta.solana.com'].filter(Boolean);
-const PUBLIC = !process.env.RPC_URL;            // the public RPC rate-limits hard: go slower and retry longer
+// a private RPC first when one is set (RPC_URL in Vercel's settings), then two free public ones: a refusal or a rate limit on one moves the call to the next
+const RPCS = [process.env.RPC_URL, 'https://api.mainnet-beta.solana.com', 'https://solana-rpc.publicnode.com'].filter(Boolean);
+const PUBLIC = !process.env.RPC_URL;            // the free RPCs rate-limit hard: go slower and retry longer
 const { AsyncLocalStorage } = require('node:async_hooks');
 const CLOCK = new AsyncLocalStorage(), HARD = 54000;   // every scan carries its own hard stop, well inside the function's 60 s
 const until = () => { const c = CLOCK.getStore(); return c ? c.end - Date.now() : Infinity; };
@@ -14,7 +15,7 @@ const TOKEN22 = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb';
 const ATA = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
 const MPL = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s';
 const RULES = { devCap: 3, walletCap: 1, window: 60, lock: 86400 };          // % of supply, % of supply, seconds, seconds
-const TXOPT = { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0, commitment: 'confirmed' };
+const TXOPT = { encoding: 'jsonParsed', maxSupportedTransactionVersion: 1, commitment: 'confirmed' };   // v1 transactions are live on mainnet
 const EARLY_CAP = 140, FUNDER_CAP = 22, BUDGET = 48000;
 // exchange hot wallets: many strangers withdrawing from one exchange is not a bundle
 const EXCHANGES = new Set([
@@ -92,27 +93,39 @@ async function post(url, payload) {
   if (r.status === 401 || r.status === 403 || r.status >= 500) throw Object.assign(new Error('rpc ' + r.status), { next: true });
   return r.json();
 }
+const LIMITED = /rate|too many|429/i, REFUSED = /forbidden|token|not allowed|disabled|unauthori|not available|upgrade|api key/i;
+const newer = m => { const v = /transaction version \((\d+)\) is not supported/i.exec(m); return v ? +v[1] : null; };
 async function rpc(method, params) {
-  let last;
-  for (const u of RPCS) {
-    for (let a = 0; a < (PUBLIC ? 7 : 4); a++) {
+  let last, empty = false; const dead = new Set();
+  for (let round = 0; round < (PUBLIC ? 6 : 4); round++) {
+    let limited = false;
+    for (const u of RPCS) {
+      if (dead.has(u)) continue;
       if (until() < 1500) throw last || new Error('Solana did not answer in time');
       try {
         const j = await post(u, { jsonrpc: '2.0', id: 1, method, params });
-        if (!j.error) return j.result;
-        const m = String(j.error.message || '');
-        if (/forbidden|token|not allowed|disabled|unauthori/i.test(m)) { last = new Error(m); break; }
-        if (!/rate|too many|429/i.test(m)) throw Object.assign(new Error(m || 'rpc error'), { final: true });
-        last = new Error(m);
+        if (!j.error) { if (j.result == null && method === 'getTransaction') { empty = true; dead.add(u); continue; } return j.result; }   // a pruned RPC may not have it: ask the next one
+        const m = String(j.error.message || ''), v = newer(m);
+        if (v != null && params[1] && v > (params[1].maxSupportedTransactionVersion || 0)) {   // a newer transaction format: ask for it and go again
+          TXOPT.maxSupportedTransactionVersion = Math.max(TXOPT.maxSupportedTransactionVersion, v);
+          params = [params[0], { ...params[1], maxSupportedTransactionVersion: v }]; last = new Error(m); limited = true; continue;
+        }
+        if (LIMITED.test(m)) { last = new Error(m); limited = true; continue; }        // rate limited here: try the next RPC now
+        if (REFUSED.test(m)) { last = new Error(m); dead.add(u); continue; }           // this RPC will not serve the call: skip it
+        throw Object.assign(new Error(m || 'rpc error'), { final: true });
       } catch (e) {
-        last = e; if (e.final) throw e;
-        if (!e.again) break;
+        if (e.final) throw e;
+        last = e;
+        if (e.again) { limited = true; continue; }
+        dead.add(u);                                                                 // refused, down or timed out: next RPC
       }
-      const wait = (PUBLIC ? 800 : 450) * (a + 1);   // rate limited: back off, but never past this scan's hard stop
-      if (until() - wait < 1500) throw last;
-      await sleep(wait);
     }
+    if (!limited || dead.size === RPCS.length) break;
+    const wait = (PUBLIC ? 700 : 400) * (round + 1);   // every RPC rate-limited us: back off, but never past this scan's hard stop
+    if (until() - wait < 1500) break;
+    await sleep(wait);
   }
+  if (empty) return null;
   throw last || new Error('Solana did not answer');
 }
 async function pmap(items, n, fn) {
@@ -120,27 +133,32 @@ async function pmap(items, n, fn) {
   await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (i < items.length) { const k = i++; out[k] = await fn(items[k], k); } }));
   return out;
 }
-let batchWorks = true;
-const limited = j => /rate|too many|429/i.test(String(j && j.error && j.error.message || ''));
-async function many(method, list) {                 // JSON-RPC batches (retried as a batch when rate limited), then single calls for what is left
+const noBatch = new Set();                            // RPCs that do not take JSON-RPC batches
+async function many(method, list) {                  // JSON-RPC batches spread over the RPCs, then single calls for whatever is left
   const out = new Array(list.length).fill(null);
   const B = PUBLIC ? 10 : 20, starts = []; for (let i = 0; i < list.length; i += B) starts.push(i);
   await pmap(starts, PUBLIC ? 1 : 3, async s => {
     if (until() < 4000) return;                       // out of time: leave the rest unread (the scan says so)
     const part = list.slice(s, s + B);
     let todo = part.map((_, k) => k);
-    for (const u of RPCS) {
-      if (!batchWorks || !todo.length) break;
-      for (let a = 0; a < (PUBLIC ? 5 : 3) && todo.length && until() > 5000; a++) {
+    for (let round = 0; round < (PUBLIC ? 4 : 3) && todo.length && until() > 5000; round++) {
+      let limited = false;
+      for (const u of RPCS) {
+        if (noBatch.has(u) || !todo.length || until() < 5000) continue;
         let j;
         try { j = await post(u, todo.map(k => ({ jsonrpc: '2.0', id: k, method, params: part[k] }))); }
-        catch (e) { if (!e.again) break; await sleep((PUBLIC ? 900 : 500) * (a + 1)); continue; }
-        if (!Array.isArray(j)) { if (limited(j)) { await sleep((PUBLIC ? 900 : 500) * (a + 1)); continue; } batchWorks = false; break; }
-        let rate = false;
-        for (const it of j) if (it && it.result !== undefined && !it.error) { out[s + it.id] = it.result; todo = todo.filter(k => k !== it.id); } else if (it && limited(it)) rate = true;
-        if (!rate) break;                               // whatever is still missing is not a rate limit: try it one by one
-        await sleep((PUBLIC ? 900 : 500) * (a + 1));
+        catch (e) { if (e.again) limited = true; continue; }
+        if (!Array.isArray(j)) { if (LIMITED.test(String(j && j.error && j.error.message || ''))) limited = true; else noBatch.add(u); continue; }
+        for (const it of j) {
+          if (!it) continue;
+          if (it.result != null && !it.error) { out[s + it.id] = it.result; todo = todo.filter(k => k !== it.id); }
+          else if (it.result === null && !it.error && method !== 'getTransaction') todo = todo.filter(k => k !== it.id);
+          else if (LIMITED.test(String(it.error && it.error.message || ''))) limited = true;
+          else { const v = newer(String(it.error && it.error.message || '')); if (v != null) TXOPT.maxSupportedTransactionVersion = Math.max(TXOPT.maxSupportedTransactionVersion, v); }
+        }
       }
+      if (!limited) break;                            // what is still missing is not a rate limit: try it one by one
+      await sleep((PUBLIC ? 900 : 500) * (round + 1));
     }
     await pmap(todo, PUBLIC ? 2 : 3, async k => { try { out[s + k] = await rpc(method, part[k]); } catch { out[s + k] = null; } });
   });
@@ -297,6 +315,8 @@ async function scanOnce(mint) {
   const early = sigs.slice(li).filter(s => s.slot === slot0 || (s.blockTime != null && t0 != null && s.blockTime - t0 <= RULES.window));
   const read = early.slice(0, EARLY_CAP);
   const txs = await many('getTransaction', read.map(s => [s.signature, TXOPT]));
+  const loaded = txs.filter(Boolean).length, whole = loaded === early.length;   // a verdict only covers what was actually read
+  if (!loaded) return { ok: false, code: 'slow', error: "Solana didn't send this launch's transactions in time, so there is nothing to judge yet. Try again in a minute.", meta };
   if (!creator && txs[0]) creator = keyOf(txs[0].transaction.message.accountKeys[0]);
   const venue = isPump ? 'pump.fun' : venueOf(txs[0]) || venueOf(head[li]) || 'Solana';
   const P = raw => Number((raw * 1000000n) / supply) / 10000;
@@ -389,18 +409,18 @@ async function scanOnce(mint) {
   if (refused) parts.push(`refused ${refused} buy${refused === 1 ? '' : 's'}`);
   if (trimmed) parts.push(`trimmed ${trimmed} to the cap`);
   if (devFlags.length) parts.push('held the dev back');
-  const headline = clean ? 'Clean launch. Every buy in the first minute would have passed the gate.'
+  const headline = clean ? (whole ? 'Clean launch. Every buy in the first minute would have passed the gate.' : `Clean so far: nothing to stop in the ${loaded} of ${early.length} first-minute transactions read.`)
     : 'The gate would have ' + (parts.length > 1 ? parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1] : parts[0]) + '.';
   return {
     ok: true, mint, name: meta.name, symbol: meta.symbol, image: meta.image, creator, graduated, venue,
     program: prog === TOKEN22 ? 'token-2022' : 'token', supply: supply.toString(), decimals: info.decimals,
     launch: { slot: slot0, time: t0, sig: sigs[li].signature, afterMint: li },
-    verdict: clean ? 'clean' : 'blocked', headline,
+    verdict: clean ? (whole ? 'clean' : 'unsure') : 'blocked', headline,
     totals: { refused, trimmed, prelaunch: prelaunch.length, wallets: hit.size, blockedPct, buys: [...per.values()].reduce((a, w) => a + w.buys, 0), buyers: per.size, fresh: freshCount },
     dev: { launchPct: P(devLaunch), keptPct: P(devTaken), overCap: devLaunch > devCap, moves: dm.moves.map(m => ({ t: m.t, pct: P(m.raw), sig: m.sig })), movedPct: P(devOut), flags: devFlags },
     rules: { prelaunch: prelaunch.map(w => ({ owner: w.owner, pct: P(w.raw) })), block0, repeat, over, clusters: clusters.map(c => ({ ...c, pct: P(c.wallets.reduce((a, o) => a + ((per.get(o) || {}).raw || 0n), 0n)) })) },
     timeline,
-    read: { early: early.length, read: txs.filter(Boolean).length, partial: early.length > read.length || txs.some(t => !t) || fu.partial || dm.partial, rpc: process.env.RPC_URL ? 'custom' : 'public', ms: Date.now() - T0 },
+    read: { early: early.length, read: loaded, partial: !whole || fu.partial || dm.partial, rpc: process.env.RPC_URL ? 'custom' : 'public', ms: Date.now() - T0 },
     rules_used: RULES,
   };
 }
