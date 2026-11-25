@@ -1,7 +1,6 @@
 // Astro landing page: intro, smooth scroll, the world behind the page, and every working part in front of it.
 import { $, $$, esc, copy, toast, config, scramble, short } from './util.js';
 import { paintIcons } from './icons.js';
-import { LiveGate, mountTape, mountCounters, mountBoard } from './live.js';
 import { mountScanner } from './scan.js';
 import { mountGate } from './gate.js';
 
@@ -102,7 +101,7 @@ const rvObs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersect
 $$('.rv').forEach(el => rvObs.observe(el));
 const sweep = () => $$('.rv:not(.vis)').forEach(el => { const r = el.getBoundingClientRect(); if (r.top < innerHeight && r.bottom > 0) el.classList.add('vis'); });
 addEventListener('hashchange', () => setTimeout(sweep, 900));
-const ids = ['trench', 'gate', 'rules', 'chain', 'scan', 'live', 'plan', 'faq', 'liftoff'];
+const ids = ['trench', 'gate', 'rules', 'chain', 'scan', 'plan', 'faq', 'liftoff'];
 const railLinks = $$('#rail a'), navLinks = $$('.nav-links a[href^="#"]'), secs = ids.map(id => $('#' + id));
 let curSec = -2;
 function spy() {
@@ -122,14 +121,9 @@ $('#burger').onclick = () => { sheet.classList.add('open'); sheet.setAttribute('
 $('#sheetX').onclick = closeSheet;
 sheet.addEventListener('click', e => { if (e.target.closest('a')) closeSheet(); });
 
-// ---------- live gate, scan ----------
+// ---------- scan ----------
 if (innerWidth < 520) $('#heroInput').placeholder = 'Paste any token';
-const live = new LiveGate();
-mountTape(live, $('#tapeTrack'), $('#tapeDot'));
-mountCounters(live, $('#counters'), $('#ctrDot'), $('#ctrNote'));
-const scanner = mountScanner({ form: $('#scanForm'), input: $('#scanInput'), res: $('#scanRes'), paste: $('#scanPaste'), recent: $('#scanTry'), live });
-mountBoard(live, $('#board'), { rows: 10, onScan: m => { go('#scan'); setTimeout(() => scanner.run(m), 350); } });
-live.connect();
+const scanner = mountScanner({ form: $('#scanForm'), input: $('#scanInput'), res: $('#scanRes'), paste: $('#scanPaste'), recent: $('#scanTry') });
 $('#heroScan').addEventListener('submit', e => {
   e.preventDefault(); const v = $('#heroInput').value.trim();
   if (!v) { $('#heroInput').focus(); toast('Paste a token\'s contract address first'); return; }
